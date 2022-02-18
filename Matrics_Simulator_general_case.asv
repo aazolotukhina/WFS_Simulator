@@ -5,8 +5,8 @@ close all; clear; clc;
 Lambda=0.65e-6;                 % wavelength [m]
 k=2*pi/Lambda;                  % wavenumber
 
-Pixels_X=500;                   % image pixels on the X axis
-Pixels_Y=500;                   % image pixels on the Y axis
+Pixels_X=2048;                   % image pixels on the X axis
+Pixels_Y=2048;                   % image pixels on the Y axis
 PixelSize= 5.5e-6;               % pixel size [m]
 Pitch=136e-6;                 % microlens size [m]
 ML_focal=3.2e-3;                % focal dist [m]
@@ -78,13 +78,14 @@ MaxIntens=max(max(VAL(:,:),[],1));
 MinIntens=MaxIntens/(2^Bits-1);
 IntensityPixelised_VAL=fix(VAL(:,:)./MinIntens).*MinIntens/max(max(VAL));
 
-if Cut_flag == 1
+if cut_flag == 1:
     All_pixels = size(IntensityPixelised_VAL,1);
-    Cut_pixels = All_pixels - Pixels_X-1;
-    IntensityPixelised_VAL((All_pixels - Cut_pixels/2):All_pixels,:) = [];
-    IntensityPixelised_VAL(:, (All_pixels - Cut_pixels/2):All_pixels) = [];
+    Cut_pixels = All_pixels - Pixels_X;
+    if (mod(Cut_pixels,2)==1):
+        Cut_pixels = Cut_pixels+1;
     IntensityPixelised_VAL(1:Cut_pixels/2,:) = [];
     IntensityPixelised_VAL(:,1:Cut_pixels/2) = [];
+    IntensityPixelised_VAL(size(IntensityPixelised_VAL,1))
 end
 
 figure('Name','Reference hartmannogram');
@@ -122,15 +123,6 @@ VAL_shift = (sinc(Pitch*PixelSize*(X+SHIFT_Y)/Lambda/ML_focal)).^2.*...
 MaxIntens=max(max(VAL_shift(:,:),[],1));
 MinIntens=MaxIntens/(2^Bits-1);
 IntensityPixelised_VAL_shift=fix(VAL_shift(:,:)./MinIntens).*MinIntens/max(max(VAL_shift));
-
-if Cut_flag == 1
-    All_pixels = size(IntensityPixelised_VAL_shift,1);
-    Cut_pixels = floor(All_pixels - Pixels_X);
-    IntensityPixelised_VAL_shift((All_pixels - Cut_pixels/2):All_pixels,:) = [];
-    IntensityPixelised_VAL_shift(:, (All_pixels - Cut_pixels/2):All_pixels) = [];
-    IntensityPixelised_VAL_shift(1:Cut_pixels/2,:) = [];
-    IntensityPixelised_VAL_shift(:,1:Cut_pixels/2) = [];
-end
 
 figure('Name','Processed hartmannogram');
 imshow(IntensityPixelised_VAL_shift,[]);
