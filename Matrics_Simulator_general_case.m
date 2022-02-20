@@ -7,10 +7,11 @@ k=2*pi/Lambda;                  % wavenumber
 
 Pixels_X=500;                   % image pixels on the X axis
 Pixels_Y=500;                   % image pixels on the Y axis
-PixelSize= 5.5e-6;               % pixel size [m]
-Pitch=136e-6;                 % microlens size [m]
+PixelSize= 5.5e-6;              % pixel size [m]
+Pitch=136e-6;                   % microlens size [m]
 ML_focal=3.2e-3;                % focal dist [m]
 Bits=8;                         % camera bit rate
+% ApertDiam=2.75e-3;
 ApertDiam=Pixels_X*PixelSize;   % diameter of the full aperture [m]
 ApertRad=ApertDiam/2;           % radius of the full aperture [m]
 
@@ -67,30 +68,30 @@ k = 1:ML_Pixels;
 i_rep = repmat(I,NumberLens_X+1,NumberLens_X+1);
 k_rep = repmat(K,NumberLens_X+1,NumberLens_X+1);
 
-IX =  P0_X + k_rep - 1;
-IY =  P0_Y + i_rep - 1;
+IX =  P0_X + i_rep;
+IY =  P0_Y + k_rep;
 
-X = IX - X_0;
-Y = IY - Y_0;
+Y = IX - X_0;
+X = IY - Y_0;
 
 VAL = ((sinc(Pitch*PixelSize*X/Lambda/ML_focal)).^2.*(sinc(Pitch*PixelSize*Y/Lambda/ML_focal)).^2);
 MaxIntens=max(max(VAL(:,:),[],1));
 MinIntens=MaxIntens/(2^Bits-1);
 IntensityPixelised_VAL=fix(VAL(:,:)./MinIntens).*MinIntens/max(max(VAL));
 
+% Cropping pixels
 if Cut_flag == 1
+    IntensityPixelised_VAL(1:floor(ML_Pixels/2),:) = [];
+    IntensityPixelised_VAL(:,1:floor(ML_Pixels/2)) = [];
     All_pixels = size(IntensityPixelised_VAL,1);
-    Cut_pixels = All_pixels - Pixels_X-1;
-    IntensityPixelised_VAL((All_pixels - Cut_pixels/2):All_pixels,:) = [];
-    IntensityPixelised_VAL(:, (All_pixels - Cut_pixels/2):All_pixels) = [];
-    IntensityPixelised_VAL(1:Cut_pixels/2,:) = [];
-    IntensityPixelised_VAL(:,1:Cut_pixels/2) = [];
+    IntensityPixelised_VAL(Pixels_X+1:All_pixels,:) = [];
+    IntensityPixelised_VAL(:, Pixels_X+1:All_pixels) = [];
 end
 
 figure('Name','Reference hartmannogram');
 imshow(IntensityPixelised_VAL,[]);
 % Save to the "Hartmannograms" folder 
-imwrite(IntensityPixelised_VAL,'Hartmannograms\REF_2048_136_val.bmp'); 
+imwrite(IntensityPixelised_VAL,'Hartmannograms\REF_700_136_no_cut.bmp'); 
                 
 %%  Introduction slopes
 % Сoordinates of subaperture centers 
@@ -123,65 +124,16 @@ MaxIntens=max(max(VAL_shift(:,:),[],1));
 MinIntens=MaxIntens/(2^Bits-1);
 IntensityPixelised_VAL_shift=fix(VAL_shift(:,:)./MinIntens).*MinIntens/max(max(VAL_shift));
 
+% Cropping pixels
 if Cut_flag == 1
+    IntensityPixelised_VAL_shift(1:floor(ML_Pixels/2),:) = [];
+    IntensityPixelised_VAL_shift(:,1:floor(ML_Pixels/2)) = [];
     All_pixels = size(IntensityPixelised_VAL_shift,1);
-    Cut_pixels = floor(All_pixels - Pixels_X);
-    IntensityPixelised_VAL_shift((All_pixels - Cut_pixels/2):All_pixels,:) = [];
-    IntensityPixelised_VAL_shift(:, (All_pixels - Cut_pixels/2):All_pixels) = [];
-    IntensityPixelised_VAL_shift(1:Cut_pixels/2,:) = [];
-    IntensityPixelised_VAL_shift(:,1:Cut_pixels/2) = [];
+    IntensityPixelised_VAL_shift(Pixels_X+1:All_pixels,:) = [];
+    IntensityPixelised_VAL_shift(:, Pixels_X+1:All_pixels) = [];
 end
 
 figure('Name','Processed hartmannogram');
 imshow(IntensityPixelised_VAL_shift,[]);
 % Save to the "Hartmannograms" folder 
-imwrite(IntensityPixelised_VAL_shift,'Hartmannograms\DEF_2048_136_val_shift.bmp'); 
-
-%%  Writing reference and shifts to a file 
-% % Data for reference
-% k=1;
-% for i=0:NumberLens_X-1
-%     MLA_Centerx_px(k) = (0+i*Pitch+ML_Center)/PixelSize;
-%     k=k+1;
-% end
-% MLA_Centery_px = MLA_Centerx_px;
-% [MLA_CenterX_px,MLA_CenterY_px]=meshgrid(MLA_Centerx_px,MLA_Centery_px);
-% 
-% MLA_CenterXr = reshape(MLA_CenterX_px',400,1);
-% MLA_CenterYr = reshape(MLA_CenterY_px',400,1);
-% LeftTopX = MLA_CenterXr - Pitch/(2*PixelSize);
-% LeftTopY = MLA_CenterYr - Pitch/(2*PixelSize);
-% RightBottomX = MLA_CenterXr + Pitch/(2*PixelSize);
-% RightBottomY = MLA_CenterYr + Pitch/(2*PixelSize);
-% Data = zeros(2400,1);
-% Data(1:6:end,:) = MLA_CenterXr;
-% Data(2:6:end,:) = MLA_CenterYr;
-% Data(3:6:end,:) = LeftTopX;
-% Data(4:6:end,:) = LeftTopY;
-% Data(5:6:end,:) = RightBottomX;
-% Data(6:6:end,:) = RightBottomY;
-% 
-% % Data for shifts
-% Shift_X = reshape((ShiftX/PixelSize)',400,1);
-% Shift_Y = reshape((ShiftY/PixelSize)',400,1);
-% New_CenterX = MLA_CenterXr + Shift_X;
-% New_CenterY = MLA_CenterYr + Shift_Y;
-% Shift_Centers = zeros(800,1);
-% Shift_Centers(1:2:end,:) = New_CenterX;
-% Shift_Centers(2:2:end,:) = New_CenterY;
-% 
-% % Creating a reference file
-% fig1 = fopen('Files_txt\Reference.txt', 'w'); 
-% fprintf(fig1, '%d\n',Pixels_X);             % image width in pixels
-% fprintf(fig1, '%d\n',Pixels_Y);             % image height in pixels
-% fprintf(fig1, '%5.6f\n',Lambda*10^6);       % wavelength [um]
-% fprintf(fig1, '%5.6f\n',PixelSize*10^6);    % pixel size [um]
-% fprintf(fig1, '%5.6f\n',ML_focal*10^3);     % focal length [mm]
-% fprintf(fig1, '%5.6f\n',Pitch*10^3);        % pitch size [mm]
-% fprintf(fig1, '%1.10f\n',Data); 
-% fclose(fig1);
-% 
-% % Creating a processed file
-% fig2 = fopen('Files_txt\Shifted_centers.txt', 'w'); 
-% fprintf(fig2, '%5.10f\n', Shift_Centers);   % shifting the centers [m]
-% fclose(fig2);
+imwrite(IntensityPixelised_VAL_shift,'Hartmannograms\DEF_700_136_no_cut.bmp'); 
