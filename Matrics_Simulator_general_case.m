@@ -91,7 +91,7 @@ end
 figure('Name','Reference hartmannogram');
 imshow(IntensityPixelised_VAL,[]);
 % Save to the "Hartmannograms" folder 
-imwrite(IntensityPixelised_VAL,'Hartmannograms\REF_700_136_no_cut.bmp'); 
+imwrite(IntensityPixelised_VAL,'Hartmannograms\REF_500_136_cut.bmp'); 
                 
 %%  Introduction slopes
 % Сoordinates of subaperture centers 
@@ -136,4 +136,4 @@ end
 figure('Name','Processed hartmannogram');
 imshow(IntensityPixelised_VAL_shift,[]);
 % Save to the "Hartmannograms" folder 
-imwrite(IntensityPixelised_VAL_shift,'Hartmannograms\DEF_700_136_no_cut.bmp'); 
+imwrite(IntensityPixelised_VAL_shift,'Hartmannograms\DEF_500_136_cut.bmp'); 
